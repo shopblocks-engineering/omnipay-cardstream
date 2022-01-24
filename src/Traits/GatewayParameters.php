@@ -173,4 +173,15 @@ trait GatewayParameters
     {
         return $this->setParameter('customerId', $value);
     }
+
+
+    public function getXref()
+    {
+        return $this->getParameter('xref');
+    }
+
+    public function setXref(string $value)
+    {
+        return $this->setParameter('xref', $value);
+    }
 }
