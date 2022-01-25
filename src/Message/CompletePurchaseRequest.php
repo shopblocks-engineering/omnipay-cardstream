@@ -20,7 +20,7 @@ class CompletePurchaseRequest extends BaseRequest
      * before passing it on to the response.
      *
      * @param array $data
-     * @return CompleteAuthorizeResponse
+     * @return CompletePurchaseResponse
      * @throws InvalidRequestException
      */
     public function sendData($data)

@@ -1,99 +1,112 @@
 <?php
 
-namespace Omnipay\Cardstream\Message\Api;
+namespace Omnipay\Cardstream\Message;
 
-use Omnipay\Common\Message\AbstractRequest;
-
-/**
- * Refund an authorisation.
- */
-
-class RefundRequest extends AbstractRequest
+class RefundRequest extends BaseRequest
 {
-    public function getEndpoint()
-    {
-        return static::$directUrl;
-    }
-
-    public function getEndpoint()
-    {
-        return $this->getPaymentUrl(static::SERVICE_GROUP_PAYMENT_CAPTURE);
-    }
 
     public function getData()
     {
-        $data = parent::getData();
+        $data = [];
 
-        $data['modificationAmount'] = [
-            'currency' => $this->getCurrency(),
-            'value' => $this->getAmountInteger(),
-        ];
+        $data['merchantID'] = $this->getMerchantId();
+        $data['action'] = $this->getAction(); // PREAUTH, VERIFY, SALE, REFUND, REFUND_SALE
+        $data['type'] = 1; // ecommerce type
+        $data['formResponsive'] = 'Y';
+        $data['xref'] = $this->getXref();
+        // a delay of zero allows duplicate transactions to go through
+        $data['duplicateDelay'] = $this->getTestMode() ? 0 : 300;
 
-        return $data;
-    }
+        $data['amount'] = $this->getAmountInteger();
 
-    /**
-     * TODO: there is also a `technicalCancel` service where the
-     * originalMerchantReference (original transactionid) can be supplied
-     * instead of the originalPspReferenec (transactionReference).
-     */
-    public function getEndpoint()
-    {
-        $service = (
-        $this->getRefundIfCaptured()
-            ? static::SERVICE_GROUP_PAYMENT_CANCELORREFUND
-            : static::SERVICE_GROUP_PAYMENT_CANCEL
-        );
-
-        return $this->getPaymentUrl($service);
-    }
-
-    public function getData()
-    {
-        $data = $this->getBaseData();
-
-        $this->validate('transactionReference');
-
-        $data['originalReference'] = $this->getTransactionReference();
-
-        if ($transactionId = $this->getTransactionId()) {
-            $data['reference'] = $transactionId;
+        if ($returnUrl = $this->getReturnUrl()) {
+            $data['redirectURL'] = $returnUrl;
         }
 
-        return $data;
-    }
+        // Remove items we don't want to send in the request
+        // (they may be there if a previous response is sent)
+        $data = array_diff_key($data, [
+            'responseCode'=> null,
+            'responseMessage' => null,
+            'responseStatus' => null,
+            'state' => null,
+            'signature' => null,
+            'merchantAlias' => null,
+            'merchantID2' => null,
+        ]);
+        $data['signature'] = $this->getSigningString($data, $this->getMerchantSecret(), true);
 
-    /**
-     * @return ModificationResponse
-     */
-    public function createResponse($payload)
-    {
-        return new ModificationResponse($this, $payload);
-    }
+        $this->validateParams([
+            'merchantID',
+            'merchantSecret',
+            'action',
+            'currencyCode',
+            'countryCode',
+        ], array_merge($data, ['merchantSecret' => $this->getMerchantSecret()]));
 
-    /**
-     * @return mixed
-     */
-    public function getRefundIfCaptured()
-    {
-        return $this->getParameter('refundIfCaptured');
-    }
-
-    /**
-     * If set, then when performing a void, then if the authorisation
-     * has already been cleared, a full `refund` will be performed
-     * automatically in place of the `cancel`.
-     *
-     * @param mixed $value Treated as boolean
-     * @return $this
-     */
-    public function setRefundIfCaptured($value)
-    {
-        return $this->setParameter('refundIfCaptured', $value);
+        return $this->prepare($data);
     }
 
     public function sendData($data)
     {
         // TODO: Implement sendData() method.
+    }
+
+    public function refundRequest()
+    {
+        $queryPayload = [
+            'merchantID' => $this->merchantID,
+            'xref' => $xref,
+            'action' => 'QUERY',
+        ];
+
+        $queryPayload['signature'] = static::sign($queryPayload, $this->merchantSecret);
+
+        $paymentInfo = $this->client->post($queryPayload);
+
+        $state = $paymentInfo['state'] ?? null;
+
+        $payload = [
+            'merchantID' => $this->merchantID,
+            'xref' => $xref,
+        ];
+
+        switch ($state) {
+            case 'approved':
+            case 'captured':
+                $payload['action'] = 'CANCEL';
+                break;
+            case 'accepted':
+                $payload = array_merge($payload, [
+                    'type' => 1,
+                    'action' => 'REFUND_SALE',
+                    'amount' => $amount,
+                ]);
+                break;
+            default:
+                throw new \InvalidArgumentException('Something went wrong, we can\'t find transaction '. $xref);
+        }
+
+        $payload['signature'] = static::sign($payload, $this->merchantSecret);
+        $res = $this->client->post($payload);
+
+        if (isset($res['responseCode']) && $res['responseCode'] == "0") {
+            $orderMessage = ($res['responseCode'] == "0" ? "Refund Successful" : "Refund Unsuccessful") . "<br/><br/>";
+
+            $state = $res['state'] ?? null;
+
+            if ($state != 'canceled') {
+                $orderMessage .= "Amount Refunded: " . (isset($res['amountReceived']) ? number_format($res['amountReceived'] / pow(10, $res['currencyExponent']), $res['currencyExponent']) : "None") . "<br/><br/>";
+            }
+
+            $orderMessage .=
+                "Message: " . $res['responseMessage'] . "<br/>" .
+                "xref: " . $res['xref'] . "<br/>";
+
+            return [
+                'message' => $orderMessage,
+                'response' => $res,
+            ];
+        }
     }
 }
