@@ -55,16 +55,16 @@ class HppGateway extends AbstractGateway
 
         return $this->createRequest('\Omnipay\Cardstream\Message\CompletePurchaseRequest', $parameters);
     }
-    //
-    // public function completeAuthorize(array $parameters = [])
-    // {
-    //     return $this->createRequest('\Omnipay\Cardstream\Message\CompleteAuthorizeRequest', $parameters);
-    // }
-    //
-    // public function capture(array $parameters = [])
-    // {
-    //     return $this->createRequest('\Omnipay\Cardstream\Message\CaptureRequest', $parameters);
-    // }
+    
+    public function completeAuthorize(array $parameters = [])
+    {
+        return $this->createRequest('\Omnipay\Cardstream\Message\CompleteAuthorizeRequest', $parameters);
+    }
+    
+    public function capture(array $parameters = [])
+    {
+        return $this->createRequest('\Omnipay\Cardstream\Message\CaptureRequest', $parameters);
+    }
     //
     // public function void(array $parameters = [])
     // {
