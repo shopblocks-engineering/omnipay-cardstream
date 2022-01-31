@@ -161,9 +161,6 @@ trait GatewayParameters
         return $this->setParameter('signature', $value);
     }
 
-    /**
-     * @return string|null
-     */
     public function getCustomerId()
     {
         return $this->getParameter('customerId');
@@ -173,7 +170,6 @@ trait GatewayParameters
     {
         return $this->setParameter('customerId', $value);
     }
-
 
     public function getXref()
     {
