@@ -27,27 +27,9 @@ class AuthorizeRequest extends PurchaseRequest
         $data['customerName'] = $this->getCustomerName();
         $data['customerEmail'] = $this->getCustomerEmail();
         $data['customerAddress'] = $this->getCustomerAddress();
-        $data['customerPostCode'] = "NN17 8YG";//$this->getCustomerPostCode();
+        $data['customerPostCode'] = $this->getCustomerPostCode();
         $data['customerPhone'] = $this->getCustomerPhone();
 
-        // ??? JUST FOR TESTING !!!
-        $data['cardNumber'] = '4929421234600821';
-        $data['cardExpiryMonth'] = 12;
-        $data['cardExpiryYear'] = 22;
-        $data['cardCVV'] = '356';
-
-        // if ($card = $this->getCard()) {
-        //     //     $data['billingAddress.houseNumberOrName'] = $card->getBillingAddress1() ?: '';
-        //     //     $data['billingAddress.street'] = $card->getBillingAddress2() ?: '';
-        //     //     $data['billingAddress.city'] = $card->getBillingCity() ?: '';
-        //     //     $data['billingAddress.stateOrProvince'] = $card->getBillingState() ?: '';
-        //     //     $data['billingAddress.country'] = $card->getBillingCountry() ?: '';
-        //     //     $data['billingAddress.postalCode'] = $card->getBillingPostCode() ?: '';
-        //
-        //     if ($customerEmail = $card->getEmail()) {
-        //         $data['customerEmail'] = $customerEmail;
-        //     }
-        // }
 
         if ($returnUrl = $this->getReturnUrl()) {
             $data['redirectURL'] = $returnUrl;
