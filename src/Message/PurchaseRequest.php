@@ -34,25 +34,6 @@ class PurchaseRequest extends BaseRequest
         $data['customerPostCode'] = $this->getCustomerPostCode();
         $data['customerPhone'] = $this->getCustomerPhone();
 
-        // ??? JUST FOR TESTING !!!
-        $data['cardNumber'] = '4012001037141112';
-        $data['cardExpiryMonth'] = 12;
-        $data['cardExpiryYear'] = 22;
-        $data['cardCVV'] = '083';
-
-        // if ($card = $this->getCard()) {
-        //     //     $data['billingAddress.houseNumberOrName'] = $card->getBillingAddress1() ?: '';
-        //     //     $data['billingAddress.street'] = $card->getBillingAddress2() ?: '';
-        //     //     $data['billingAddress.city'] = $card->getBillingCity() ?: '';
-        //     //     $data['billingAddress.stateOrProvince'] = $card->getBillingState() ?: '';
-        //     //     $data['billingAddress.country'] = $card->getBillingCountry() ?: '';
-        //     //     $data['billingAddress.postalCode'] = $card->getBillingPostCode() ?: '';
-        //
-        //     if ($customerEmail = $card->getEmail()) {
-        //         $data['customerEmail'] = $customerEmail;
-        //     }
-        // }
-
         if ($returnUrl = $this->getReturnUrl()) {
             $data['redirectURL'] = $returnUrl;
         }
