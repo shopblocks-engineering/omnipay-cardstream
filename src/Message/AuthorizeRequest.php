@@ -2,51 +2,19 @@
 
 namespace Omnipay\Cardstream\Message;
 
+use Omnipay\Common\Exception\InvalidRequestException;
+
 class AuthorizeRequest extends PurchaseRequest
 {
     /**
-     * @inherit
+     * @return array
+     * @throws InvalidRequestException
      */
-    public function getData()
+    public function getData(): array
     {
-        $data = [];
-        $data['captureDelay'] = 7;
-
-        $data['merchantID'] = $this->getMerchantId();
-        $data['action'] = $this->getAction(); // PREAUTH, VERIFY, SALE, REFUND, REFUND_SALE
-        $data['type'] = 1; // ecommerce type
-        $data['formResponsive'] = 'Y';
-
-        // a delay of zero allows duplicate transactions to go through
-        $data['duplicateDelay'] = $this->getTestMode() ? 0 : 300;
-
-        $data['currencyCode'] = $this->getCurrencyCode();
-        $data['countryCode'] = $this->getCountryCode();
-        $data['amount'] = $this->getAmountInteger();
-        $data['orderRef'] = $this->getTransactionId();
-        $data['customerName'] = $this->getCustomerName();
-        $data['customerEmail'] = $this->getCustomerEmail();
-        $data['customerAddress'] = $this->getCustomerAddress();
-        $data['customerPostCode'] = $this->getCustomerPostCode();
-        $data['customerPhone'] = $this->getCustomerPhone();
-
-
-        if ($returnUrl = $this->getReturnUrl()) {
-            $data['redirectURL'] = $returnUrl;
-        }
-
-		// Remove items we don't want to send in the request
-		// (they may be there if a previous response is sent)
-		$data = array_diff_key($data, [
-			'responseCode'=> null,
-			'responseMessage' => null,
-			'responseStatus' => null,
-			'state' => null,
-			'signature' => null,
-			'merchantAlias' => null,
-			'merchantID2' => null,
-		]);
-        $data['signature'] = $this->getSigningString($data, $this->getMerchantSecret(), true);
+        $data = $this->getBaseData();
+        $data['action'] = "SALE";
+        $data['captureDelay'] = $this->getCaptureDelay();
         $this->validateParams([
             'merchantID',
             'merchantSecret',
@@ -54,22 +22,21 @@ class AuthorizeRequest extends PurchaseRequest
             'currencyCode',
             'countryCode',
         ], array_merge($data, ['merchantSecret' => $this->getMerchantSecret()]));
-
+        $data['signature'] = $this->getSigningString($data, $this->getMerchantSecret(), true);
         return $this->prepare($data);
     }
 
     /**
-     * @inherit
+     * @param $data
+     * @return PurchaseResponse
      */
-    public function sendData($data)
+    public function sendData($data): PurchaseResponse
     {
-        // The response is a redirect.
-
         return new PurchaseResponse($this, $data);
     }
 
     /**
-     * addressLocked - determins whether the address can be modidied
+     * addressLocked - determines whether the address can be modified
      * by the user/shopper.
      */
     public function getAddressLocked()

@@ -9,15 +9,11 @@ namespace Omnipay\Cardstream\Message;
 
 class PurchaseRequest extends BaseRequest
 {
-    /**
-     * @inherit
-     */
-    public function getData()
-    {
-        $data = [];
 
+    protected function getBaseData(): array
+    {
         $data['merchantID'] = $this->getMerchantId();
-        $data['action'] = $this->getAction(); // PREAUTH, VERIFY, SALE, REFUND, REFUND_SALE
+        $data['action'] = 'SALE'; // PREAUTH, VERIFY, SALE, REFUND, REFUND_SALE
         $data['type'] = 1; // ecommerce type
         $data['formResponsive'] = 'Y';
 
@@ -33,23 +29,34 @@ class PurchaseRequest extends BaseRequest
         $data['customerAddress'] = $this->getCustomerAddress();
         $data['customerPostCode'] = $this->getCustomerPostCode();
         $data['customerPhone'] = $this->getCustomerPhone();
-
+        $card = $this->getCard();
+        $data['cardNumber'] = $card->getNumber();
+        $data['cardExpiryMonth'] = $card->getExpiryMonth();
+        $data['cardExpiryYear'] = $card->getExpiryDate('y');
+        $data['cardCVV'] = $card->getCvv();
         if ($returnUrl = $this->getReturnUrl()) {
             $data['redirectURL'] = $returnUrl;
         }
 
-		// Remove items we don't want to send in the request
-		// (they may be there if a previous response is sent)
-		$data = array_diff_key($data, [
-			'responseCode'=> null,
-			'responseMessage' => null,
-			'responseStatus' => null,
-			'state' => null,
-			'signature' => null,
-			'merchantAlias' => null,
-			'merchantID2' => null,
-		]);
-        $data['signature'] = $this->getSigningString($data, $this->getMerchantSecret(), true);
+        // Remove items we don't want to send in the request
+        // (they may be there if a previous response is sent)
+        return array_diff_key($data, [
+            'responseCode'=> null,
+            'responseMessage' => null,
+            'responseStatus' => null,
+            'state' => null,
+            'signature' => null,
+            'merchantAlias' => null,
+            'merchantID2' => null,
+        ]);
+    }
+
+    /**
+     * @inherit
+     */
+    public function getData()
+    {
+        $data = $this->getBaseData();
         $this->validateParams([
             'merchantID',
             'merchantSecret',
@@ -57,7 +64,7 @@ class PurchaseRequest extends BaseRequest
             'currencyCode',
             'countryCode',
         ], array_merge($data, ['merchantSecret' => $this->getMerchantSecret()]));
-
+        $data['signature'] = $this->getSigningString($data, $this->getMerchantSecret(), true);
         return $this->prepare($data);
     }
 

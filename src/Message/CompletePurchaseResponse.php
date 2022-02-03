@@ -10,25 +10,25 @@ use Omnipay\Common\Message\AbstractResponse;
 
 class CompletePurchaseResponse extends AbstractResponse
 {
-    public function isSuccessful()
+    public function isSuccessful(): bool
     {
         return $this->request->getResponseCode() == 0;
     }
 
-    public function isPending()
+    public function isPending(): bool
     {
         return $this->request->getResponseCode() == 9;
     }
 
-    public function isCancelled()
+    public function isCancelled(): bool
     {
         return $this->request->getResponseCode() == 17;
     }
 
 
-    public function getCode()
+    public function getCode(): ?string
     {
-        return $this->request->getResonseCode();
+        return $this->request->getResponseCode();
     }
 
 
