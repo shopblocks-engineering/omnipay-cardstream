@@ -180,4 +180,24 @@ trait GatewayParameters
     {
         return $this->setParameter('xref', $value);
     }
+
+    public function setCardNumber($number)
+    {
+        return $this->setParameter("cardNumber", $number);
+    }
+
+    public function getCardNumber()
+    {
+        return $this->getParameter("cardNumber");
+    }
+
+    public function getCaptureDelay()
+    {
+        return $this->getParameter("captureDelay");
+    }
+
+    public function setCaptureDelay($delay)
+    {
+        return $this->setParameter("captureDelay", $delay);
+    }
 }

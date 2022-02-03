@@ -17,7 +17,7 @@ class CaptureRequest extends BaseRequest
         $data = [];
 
         $data['merchantID'] = $this->getMerchantId();
-        $data['action'] = $this->getAction(); // PREAUTH, VERIFY, SALE, REFUND, REFUND_SALE
+        $data['action'] = "CAPTURE";
         
         $data['xref'] = $this->getXref();
 
@@ -33,7 +33,6 @@ class CaptureRequest extends BaseRequest
 			'merchantID2' => null,
 		]);
         $data['signature'] = $this->getSigningString($data, $this->getMerchantSecret(), true);
-
         return $this->prepare($data);
     }
 
