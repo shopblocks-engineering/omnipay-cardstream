@@ -65,11 +65,12 @@ class HppGateway extends AbstractGateway
     {
         return $this->createRequest('\Omnipay\Cardstream\Message\CaptureRequest', $parameters);
     }
-    //
-    // public function void(array $parameters = [])
-    // {
-    //     return $this->createRequest('\Omnipay\Cardstream\Message\VoidRequest', $parameters);
-    // }
+
+    public function void(array $parameters = [])
+    {
+        return $this->createRequest('\Omnipay\Cardstream\Message\VoidRequest', $parameters);
+    }
+
 
     /**
      * Verify the any response.
