@@ -29,11 +29,13 @@ class PurchaseRequest extends BaseRequest
         $data['customerAddress'] = $this->getCustomerAddress();
         $data['customerPostCode'] = $this->getCustomerPostCode();
         $data['customerPhone'] = $this->getCustomerPhone();
-        $card = $this->getCard();
-        $data['cardNumber'] = $card->getNumber();
-        $data['cardExpiryMonth'] = $card->getExpiryMonth();
-        $data['cardExpiryYear'] = $card->getExpiryDate('y');
-        $data['cardCVV'] = $card->getCvv();
+        if ($card = $this->getCard()) {
+            $data['cardNumber'] = $card->getNumber();
+            $data['cardExpiryMonth'] = $card->getExpiryMonth();
+            $data['cardExpiryYear'] = $card->getExpiryDate('y');
+            $data['cardCVV'] = $card->getCvv();
+        }
+
         if ($returnUrl = $this->getReturnUrl()) {
             $data['redirectURL'] = $returnUrl;
         }
